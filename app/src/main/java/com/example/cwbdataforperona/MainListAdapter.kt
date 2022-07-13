@@ -19,8 +19,6 @@ class MainListAdapter(private val context: Context) :
         private const val TYPE_IMAGE_VIEW = 2
     }
 
-    private var imageCount = 0
-
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         val layoutInflater = LayoutInflater.from(parent.context)
         return if (viewType == TYPE_IMAGE_VIEW) {
@@ -43,8 +41,6 @@ class MainListAdapter(private val context: Context) :
                 val parameter = timeBean?.parameterName + timeBean?.parameterUnit
                 tvParameter.text = parameter
             }
-        } else {
-            imageCount++
         }
     }
 
