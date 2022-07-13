@@ -15,23 +15,43 @@ class MinTViewMode(application: Application) : AndroidViewModel(application) {
     val mintlist: LiveData<MutableList<MintPOJO>>
         get() = _mintlist
 
-    private val mintListDisposable: Disposable
+    private val _loadingComplete = MutableLiveData<Boolean>()
+    val loadingComplete: LiveData<Boolean>
+        get() = _loadingComplete
+
+    private val _showToast = MutableLiveData<Boolean>()
+    val showToast: LiveData<Boolean>
+        get() = _showToast
+
+    private lateinit var mintListDisposable: Disposable
 
     init {
         Log.i("MinTViewMode", "MinTViewMode created!")
-        _mintlist.value = mutableListOf()
+        checkShowToast()
+        get36HoursData()
+    }
+
+    private fun get36HoursData() {
+        _loadingComplete.value = false
         mintListDisposable = MinTRepository.get36HoursDataRX().subscribe {
+            Log.i("MinTViewMode", "subscribe!")
             _mintlist.value = it
+            _loadingComplete.value = true
         }
     }
 
 
-    fun checkFirstOpen(): Boolean {
+    private fun checkShowToast() {
         if (SharedUtil.getFirstOpenValue(getApplication(), MainActivity.SHARED_IS_OPENED)) {
             SharedUtil.saveFirstOpenValue(getApplication(), MainActivity.SHARED_IS_OPENED, false)
-            return true
+            _showToast.value = false
+        } else {
+            _showToast.value = true
         }
-        return false
+    }
+
+    fun showToastComplete() {
+        _showToast.value = false
     }
 
     override fun onCleared() {

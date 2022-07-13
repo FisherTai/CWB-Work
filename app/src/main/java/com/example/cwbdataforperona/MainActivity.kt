@@ -3,6 +3,7 @@ package com.example.cwbdataforperona
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import android.widget.Toast
@@ -32,18 +33,25 @@ class MainActivity : AppCompatActivity() {
         binding.rlMainList.adapter = adapter
 
         viewModel.mintlist.observe(this, { newlist ->
-            if (newlist.size != 0){
+            if (newlist.size != 0) {
                 adapter.submitList(newlist)
             }
-            Log.d("MainActivity", "observe: mintlist")
         })
 
-        showToast()
+        viewModel.loadingComplete.observe(this, { loadingComplete ->
+            binding.cpiProgress.visibility =
+                if (loadingComplete) View.GONE else View.VISIBLE
+        })
+
+        viewModel.showToast.observe(this, { showToast ->
+            if (showToast) {
+                showToast()
+            }
+        })
     }
 
     private fun showToast() {
-        if (!viewModel.checkFirstOpen()) {
-            Toast.makeText(this, "歡迎回來!", Toast.LENGTH_SHORT).show()
-        }
+        Toast.makeText(this, "歡迎回來!", Toast.LENGTH_SHORT).show()
+        viewModel.showToastComplete()
     }
 }
