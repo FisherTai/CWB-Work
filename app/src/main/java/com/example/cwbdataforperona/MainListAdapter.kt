@@ -48,12 +48,8 @@ class MainListAdapter(private val context: Context) :
         }
     }
 
-    override fun getItemCount(): Int {
-        return currentList.size
-    }
-
     override fun getItemViewType(position: Int): Int {
-        return if(getItem(position).isImage) TYPE_IMAGE_VIEW else TYPE_DATA_VIEW
+        return if (getItem(position).isImage) TYPE_IMAGE_VIEW else TYPE_DATA_VIEW
     }
 
 
@@ -62,10 +58,12 @@ class MainListAdapter(private val context: Context) :
 
         init {
             itemView.setOnClickListener {
-                val intent = Intent(context, SecondActivity::class.java)
-                val content =
-                    "${binding.tvStartTime.text}\n${binding.tvEndTime.text}\n${binding.tvParameter.text}"
-                intent.putExtra("content", content)
+                val intent = Intent(context, SecondActivity::class.java).apply {
+                    putExtra(
+                        "content",
+                        "${binding.tvStartTime.text}\n${binding.tvEndTime.text}\n${binding.tvParameter.text}"
+                    )
+                }
                 context.startActivity(intent)
             }
         }

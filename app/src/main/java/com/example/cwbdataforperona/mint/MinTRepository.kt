@@ -1,48 +1,32 @@
 package com.example.cwbdataforperona.mint
 
-import android.content.Context
-import android.text.TextUtils
-import android.util.Log
 import com.example.cwbdataforperona.api.RetrofitClient
-import com.example.cwbdataforperona.local.AssetsGetter
+import io.reactivex.Observable
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.schedulers.Schedulers
 import okhttp3.ResponseBody
 import org.json.JSONArray
 import org.json.JSONObject
-import retrofit2.Call
-import retrofit2.Callback
 import retrofit2.Response
 
 object MinTRepository {
 
-    fun getFakeList(context: Context): MutableList<MintPOJO> {
-        val jsonStr = AssetsGetter.getFromAssets(context, "fakeJson.json")
-        return if (TextUtils.isEmpty(jsonStr)) mutableListOf() else parse36HoursList(jsonStr)
-    }
+    fun get36HoursDataRX(): Observable<MutableList<MintPOJO>> {
+        val queryMap: MutableMap<String, String> = mutableMapOf()
+        queryMap["Authorization"] = "CWB-1D8CCDCC-1605-4CD1-9C63-9519FD99EEA5"
+        queryMap["format"] = "JSON"
+        queryMap["locationName"] = "臺北市"
 
-    fun get36HoursData(callbacl: ReqCallBack<MutableList<MintPOJO>>) {
-        val queryMap : MutableMap<String,String> = mutableMapOf()
-        queryMap.put("Authorization","CWB-1D8CCDCC-1605-4CD1-9C63-9519FD99EEA5")
-        queryMap.put("format","JSON")
-        queryMap.put("locationName","臺北市")
+        val observable: Observable<Response<ResponseBody?>> =
+            RetrofitClient.mInTApi.get36HoursRX(queryMap)
 
-        val call: Call<ResponseBody> = RetrofitClient.mInTApi.get36Hours(queryMap)
-
-        call.enqueue(object : Callback<ResponseBody?> {
-            override fun onResponse(call: Call<ResponseBody?>?, response: Response<ResponseBody?>) {
-                Log.d("onResponse:", "get36HoursData")
-                val result = response.body()?.string()
-                if (result != null) {
-                    callbacl.onSuccess(parse36HoursList(result))
-                } else {
-                    callbacl.onFailure()
-                }
+        return observable.subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .map {
+                val result = it.body()?.string()
+                if (result == null)
+                    mutableListOf() else parse36HoursList(result)
             }
-
-            override fun onFailure(call: Call<ResponseBody?>?, t: Throwable?) {
-                Log.e("onFailure:", "error:", t)
-                callbacl.onFailure()
-            }
-        })
     }
 
 

@@ -7,6 +7,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.example.cwbdataforperona.MainActivity
 import com.example.cwbdataforperona.local.SharedUtil
+import io.reactivex.disposables.Disposable
 
 class MinTViewMode(application: Application) : AndroidViewModel(application) {
 
@@ -14,10 +15,14 @@ class MinTViewMode(application: Application) : AndroidViewModel(application) {
     val mintlist: LiveData<MutableList<MintPOJO>>
         get() = _mintlist
 
+    private val mintListDisposable: Disposable
+
     init {
         Log.i("MinTViewMode", "MinTViewMode created!")
         _mintlist.value = mutableListOf()
-        get36Hours()
+        mintListDisposable = MinTRepository.get36HoursDataRX().subscribe {
+            _mintlist.value = it
+        }
     }
 
 
@@ -29,21 +34,11 @@ class MinTViewMode(application: Application) : AndroidViewModel(application) {
         return false
     }
 
-     fun get36Hours() {
-        MinTRepository.get36HoursData(object : ReqCallBack<MutableList<MintPOJO>> {
-            override fun onSuccess(result: MutableList<MintPOJO>?) {
-                _mintlist.value = result
-            }
-
-            override fun onFailure() {
-
-            }
-        })
-//         _mintlist.value = MinTRepository.getFakeList(getApplication())
-    }
-
     override fun onCleared() {
         _mintlist.value?.clear()
+        if (!mintListDisposable.isDisposed) {
+            mintListDisposable.dispose()
+        }
         super.onCleared()
         Log.i("MinTViewMode", "MinTViewMode destroyed!")
     }
